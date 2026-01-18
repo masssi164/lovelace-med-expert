@@ -1,0 +1,130 @@
+{
+  "common": {
+    "version": "Version",
+    "invalid_configuration": "Ungültige Konfiguration",
+    "show_warning": "Warnung anzeigen",
+    "show_error": "Fehler anzeigen"
+  },
+  "card": {
+    "title": "Meine Medikamente",
+    "no_medications": "Keine Medikamente konfiguriert",
+    "add_first": "Erstes Medikament hinzufügen",
+    "configure_prompt": "Bitte konfigurieren Sie die Karte",
+    "configure_hint": "Wählen Sie ein med-expert Profil im Karteneditor",
+    "profile_not_found": "Profil nicht gefunden. Überprüfen Sie die entry_id Konfiguration.",
+    "adherence_tooltip": "Einnahmerate über {days} Tage"
+  },
+  "status": {
+    "ok": "OK",
+    "due": "Fällig",
+    "missed": "Versäumt",
+    "snoozed": "Verschoben",
+    "prn": "Bei Bedarf"
+  },
+  "actions": {
+    "take": "Nehmen",
+    "skip": "Auslassen",
+    "snooze": "Verschieben",
+    "taken": "Genommen",
+    "skipped": "Ausgelassen"
+  },
+  "time": {
+    "now": "Jetzt",
+    "due_in": "Fällig in {time}",
+    "overdue_by": "Überfällig um {time}",
+    "minutes": "{count} Min",
+    "hours": "{count} Std",
+    "days": "{count} T"
+  },
+  "inventory": {
+    "remaining": "{count} übrig",
+    "low_warning": "Niedriger Bestand",
+    "out_of_stock": "Nicht vorrätig",
+    "refill": "Nachfüllen",
+    "doses_remaining": "Dosen übrig",
+    "replace_inhaler": "Inhalator ersetzen"
+  },
+  "form": {
+    "tablet": "Tablette",
+    "capsule": "Kapsel",
+    "injection": "Spritze",
+    "inhaler": "Inhalator",
+    "drops": "Tropfen",
+    "liquid": "Flüssigkeit",
+    "cream": "Creme",
+    "patch": "Pflaster",
+    "suppository": "Zäpfchen",
+    "other": "Sonstige"
+  },
+  "wizard": {
+    "title_add": "Medikament hinzufügen",
+    "title_edit": "Medikament bearbeiten",
+    "step_basics": "Grundlagen",
+    "step_schedule": "Zeitplan",
+    "step_dosage": "Dosierung",
+    "step_options": "Optionen",
+    "step_review": "Überprüfen",
+    "name": "Name",
+    "name_hint": "Geben Sie den Medikamentennamen wie auf der Verpackung ein",
+    "form": "Form",
+    "schedule_type": "Zeitplantyp",
+    "schedule_daily": "Täglich",
+    "schedule_weekly": "Wöchentlich",
+    "schedule_interval": "Intervall",
+    "schedule_prn": "Bei Bedarf (PRN)",
+    "times": "Uhrzeiten",
+    "add_time": "Uhrzeit hinzufügen",
+    "days": "Tage",
+    "interval_hours": "Alle {hours} Stunden",
+    "dose_amount": "Dosismenge",
+    "dose_unit": "Einheit",
+    "inventory_tracking": "Bestand verfolgen",
+    "current_stock": "Aktueller Bestand",
+    "low_threshold": "Warngrenze für niedrigen Bestand",
+    "notes": "Notizen",
+    "notes_hint": "Zusätzliche Notizen oder Anweisungen",
+    "cancel": "Abbrechen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "save": "Speichern",
+    "saving": "Speichern...",
+    "success": "Medikament erfolgreich gespeichert",
+    "error": "Fehler beim Speichern des Medikaments"
+  },
+  "editor": {
+    "title": "Med Expert Kartenkonfiguration",
+    "profile": "Profil",
+    "profile_hint": "Wählen Sie ein med-expert Integrationsprofil",
+    "no_profiles": "Keine med-expert Profile gefunden. Bitte richten Sie zuerst die Integration ein.",
+    "custom_title": "Benutzerdefinierter Titel",
+    "custom_title_hint": "Leer lassen um Profilnamen zu verwenden",
+    "show_header": "Kopfzeile anzeigen",
+    "show_adherence": "Einnahmerate anzeigen",
+    "show_inventory_warnings": "Bestandswarnungen anzeigen",
+    "show_prn": "Bedarfsmedikamente anzeigen",
+    "compact_mode": "Kompaktmodus"
+  },
+  "adherence": {
+    "title": "Einnahmerate",
+    "taken": "Genommen",
+    "missed": "Versäumt",
+    "skipped": "Ausgelassen",
+    "rate": "Rate"
+  },
+  "days": {
+    "monday": "Montag",
+    "tuesday": "Dienstag",
+    "wednesday": "Mittwoch",
+    "thursday": "Donnerstag",
+    "friday": "Freitag",
+    "saturday": "Samstag",
+    "sunday": "Sonntag",
+    "mon": "Mo",
+    "tue": "Di",
+    "wed": "Mi",
+    "thu": "Do",
+    "fri": "Fr",
+    "sat": "Sa",
+    "sun": "So"
+  }
+}

@@ -1,22 +1,33 @@
+/**
+ * Med Expert Card Editor
+ *
+ * Visual editor for configuring the med-expert card.
+ */
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LitElement, html, TemplateResult, css, CSSResultGroup } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
 import { HomeAssistant, fireEvent, LovelaceCardEditor } from 'custom-card-helpers';
-
 import { ScopedRegistryHost } from '@lit-labs/scoped-registry-mixin';
-import { BoilerplateCardConfig } from './types';
-import { customElement, property, state } from 'lit/decorators';
+
+import { MedExpertCardConfig } from './types';
+import { getMedExpertEntries } from './api';
 import { formfieldDefinition } from '../elements/formfield';
 import { selectDefinition } from '../elements/select';
 import { switchDefinition } from '../elements/switch';
 import { textfieldDefinition } from '../elements/textfield';
 
-@customElement('boilerplate-card-editor')
-export class BoilerplateCardEditor extends ScopedRegistryHost(LitElement) implements LovelaceCardEditor {
+interface ProfileEntry {
+  entryId: string;
+  profileName: string;
+}
+
+@customElement('med-expert-card-editor')
+export class MedExpertCardEditor extends ScopedRegistryHost(LitElement) implements LovelaceCardEditor {
   @property({ attribute: false }) public hass?: HomeAssistant;
-
-  @state() private _config?: BoilerplateCardConfig;
-
+  @state() private _config?: MedExpertCardConfig;
   @state() private _helpers?: any;
+  @state() private _profiles: ProfileEntry[] = [];
 
   private _initialized = false;
 
@@ -27,9 +38,8 @@ export class BoilerplateCardEditor extends ScopedRegistryHost(LitElement) implem
     ...formfieldDefinition,
   };
 
-  public setConfig(config: BoilerplateCardConfig): void {
+  public setConfig(config: MedExpertCardConfig): void {
     this._config = config;
-
     this.loadCardHelpers();
   }
 
@@ -37,75 +47,16 @@ export class BoilerplateCardEditor extends ScopedRegistryHost(LitElement) implem
     if (!this._initialized) {
       this._initialize();
     }
-
     return true;
   }
 
-  get _name(): string {
-    return this._config?.name || '';
-  }
-
-  get _entity(): string {
-    return this._config?.entity || '';
-  }
-
-  get _show_warning(): boolean {
-    return this._config?.show_warning || false;
-  }
-
-  get _show_error(): boolean {
-    return this._config?.show_error || false;
-  }
-
-  protected render(): TemplateResult | void {
-    if (!this.hass || !this._helpers) {
-      return html``;
-    }
-
-    // You can restrict on domain type
-    const entities = Object.keys(this.hass.states);
-
-    return html`
-      <mwc-select
-        naturalMenuWidth
-        fixedMenuPosition
-        label="Entity (Required)"
-        .configValue=${'entity'}
-        .value=${this._entity}
-        @selected=${this._valueChanged}
-        @closed=${(ev) => ev.stopPropagation()}
-      >
-        ${entities.map((entity) => {
-          return html`<mwc-list-item .value=${entity}>${entity}</mwc-list-item>`;
-        })}
-      </mwc-select>
-      <mwc-textfield
-        label="Name (Optional)"
-        .value=${this._name}
-        .configValue=${'name'}
-        @input=${this._valueChanged}
-      ></mwc-textfield>
-      <mwc-formfield .label=${`Toggle warning ${this._show_warning ? 'off' : 'on'}`}>
-        <mwc-switch
-          .checked=${this._show_warning !== false}
-          .configValue=${'show_warning'}
-          @change=${this._valueChanged}
-        ></mwc-switch>
-      </mwc-formfield>
-      <mwc-formfield .label=${`Toggle error ${this._show_error ? 'off' : 'on'}`}>
-        <mwc-switch
-          .checked=${this._show_error !== false}
-          .configValue=${'show_error'}
-          @change=${this._valueChanged}
-        ></mwc-switch>
-      </mwc-formfield>
-    `;
-  }
-
   private _initialize(): void {
-    if (this.hass === undefined) return;
-    if (this._config === undefined) return;
-    if (this._helpers === undefined) return;
+    if (!this.hass) return;
+    if (!this._config) return;
+    if (!this._helpers) return;
+
+    // Discover available med-expert profiles
+    this._profiles = getMedExpertEntries(this.hass);
     this._initialized = true;
   }
 
@@ -113,40 +64,231 @@ export class BoilerplateCardEditor extends ScopedRegistryHost(LitElement) implem
     this._helpers = await (window as any).loadCardHelpers();
   }
 
-  private _valueChanged(ev): void {
+  // Getters for form values
+  get _entryId(): string {
+    return this._config?.entry_id || '';
+  }
+
+  get _title(): string {
+    return this._config?.title || '';
+  }
+
+  get _showHeader(): boolean {
+    return this._config?.show_header !== false;
+  }
+
+  get _showAdherence(): boolean {
+    return this._config?.show_adherence !== false;
+  }
+
+  get _showInventoryWarnings(): boolean {
+    return this._config?.show_inventory_warnings !== false;
+  }
+
+  get _compact(): boolean {
+    return this._config?.compact || false;
+  }
+
+  get _showPrn(): boolean {
+    return this._config?.show_prn !== false;
+  }
+
+  protected render(): TemplateResult {
+    if (!this.hass || !this._helpers) {
+      return html`<div class="loading">Loading...</div>`;
+    }
+
+    return html`
+      <div class="card-config">
+        <div class="section">
+          <div class="section-title">Profile</div>
+
+          ${this._profiles.length > 0
+            ? html`
+                <mwc-select
+                  naturalMenuWidth
+                  fixedMenuPosition
+                  label="Med Expert Profile (Required)"
+                  .configValue=${'entry_id'}
+                  .value=${this._entryId}
+                  @selected=${this._valueChanged}
+                  @closed=${(ev: Event) => ev.stopPropagation()}
+                >
+                  ${this._profiles.map(
+                    (profile) => html`
+                      <mwc-list-item .value=${profile.entryId}>
+                        ${profile.profileName}
+                      </mwc-list-item>
+                    `
+                  )}
+                </mwc-select>
+              `
+            : html`
+                <div class="no-profiles">
+                  <ha-icon icon="mdi:alert"></ha-icon>
+                  <span>No med-expert profiles found. Please set up the med-expert integration first.</span>
+                </div>
+              `}
+        </div>
+
+        <div class="section">
+          <div class="section-title">Appearance</div>
+
+          <mwc-textfield
+            label="Custom Title (Optional)"
+            .value=${this._title}
+            .configValue=${'title'}
+            @input=${this._valueChanged}
+            helper="Leave empty to use profile name"
+          ></mwc-textfield>
+
+          <mwc-formfield .label=${`Show header ${this._showHeader ? '(on)' : '(off)'}`}>
+            <mwc-switch
+              .checked=${this._showHeader}
+              .configValue=${'show_header'}
+              @change=${this._valueChanged}
+            ></mwc-switch>
+          </mwc-formfield>
+
+          <mwc-formfield .label=${`Compact mode ${this._compact ? '(on)' : '(off)'}`}>
+            <mwc-switch
+              .checked=${this._compact}
+              .configValue=${'compact'}
+              @change=${this._valueChanged}
+            ></mwc-switch>
+          </mwc-formfield>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Display Options</div>
+
+          <mwc-formfield .label=${`Show adherence rate ${this._showAdherence ? '(on)' : '(off)'}`}>
+            <mwc-switch
+              .checked=${this._showAdherence}
+              .configValue=${'show_adherence'}
+              @change=${this._valueChanged}
+            ></mwc-switch>
+          </mwc-formfield>
+
+          <mwc-formfield .label=${`Show inventory warnings ${this._showInventoryWarnings ? '(on)' : '(off)'}`}>
+            <mwc-switch
+              .checked=${this._showInventoryWarnings}
+              .configValue=${'show_inventory_warnings'}
+              @change=${this._valueChanged}
+            ></mwc-switch>
+          </mwc-formfield>
+
+          <mwc-formfield .label=${`Show PRN medications ${this._showPrn ? '(on)' : '(off)'}`}>
+            <mwc-switch
+              .checked=${this._showPrn}
+              .configValue=${'show_prn'}
+              @change=${this._valueChanged}
+            ></mwc-switch>
+          </mwc-formfield>
+        </div>
+      </div>
+    `;
+  }
+
+  private _valueChanged(ev: Event): void {
     if (!this._config || !this.hass) {
       return;
     }
-    const target = ev.target;
-    if (this[`_${target.configValue}`] === target.value) {
+
+    const target = ev.target as any;
+    const configValue = target.configValue;
+
+    if (!configValue) {
       return;
     }
-    if (target.configValue) {
-      if (target.value === '') {
-        const tmpConfig = { ...this._config };
-        delete tmpConfig[target.configValue];
-        this._config = tmpConfig;
-      } else {
-        this._config = {
-          ...this._config,
-          [target.configValue]: target.checked !== undefined ? target.checked : target.value,
-        };
-      }
+
+    let newValue: string | boolean;
+    if (target.checked !== undefined) {
+      // Switch
+      newValue = target.checked;
+    } else if (target.selected !== undefined) {
+      // Select
+      newValue = target.value;
+    } else {
+      // Text field
+      newValue = target.value;
     }
+
+    // Check if value actually changed
+    if ((this._config as any)[configValue] === newValue) {
+      return;
+    }
+
+    // Update config
+    if (newValue === '' || newValue === undefined) {
+      // Remove empty values
+      const tmpConfig = { ...this._config };
+      delete (tmpConfig as any)[configValue];
+      this._config = tmpConfig;
+    } else {
+      this._config = {
+        ...this._config,
+        [configValue]: newValue,
+      };
+    }
+
     fireEvent(this, 'config-changed', { config: this._config });
   }
 
   static styles: CSSResultGroup = css`
+    .card-config {
+      padding: 8px 0;
+    }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--primary-text-color);
+      margin-bottom: 12px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--divider-color, #e0e0e0);
+    }
+
     mwc-select,
     mwc-textfield {
       margin-bottom: 16px;
       display: block;
+      width: 100%;
     }
+
     mwc-formfield {
-      padding-bottom: 8px;
+      display: block;
+      padding: 8px 0;
     }
+
     mwc-switch {
       --mdc-theme-secondary: var(--switch-checked-color);
+    }
+
+    .no-profiles {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px;
+      border-radius: 8px;
+      background-color: color-mix(in srgb, var(--warning-color, #ff9800) 15%, transparent);
+      color: var(--warning-color, #ff9800);
+      font-size: 13px;
+    }
+
+    .no-profiles ha-icon {
+      --mdc-icon-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .loading {
+      padding: 16px;
+      text-align: center;
+      color: var(--secondary-text-color);
     }
   `;
 }
