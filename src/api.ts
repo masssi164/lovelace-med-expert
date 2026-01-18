@@ -275,25 +275,28 @@ export function getMedicationEntities(
       });
     }
 
-    const med = medicationMap.get(medicationId)!;
+    const med = medicationMap.get(medicationId);
+    if (!med || !med.entityIds) {
+      continue;
+    }
 
     // Determine entity type and extract data
     if (entityId.endsWith('_status')) {
-      med.entityIds!.status = entityId;
+      med.entityIds.status = entityId;
       med.status = parseStatus(state.state);
       med.schedule = parseScheduleFromAttributes(state.attributes);
       med.notes = state.attributes?.notes || null;
     } else if (entityId.endsWith('_next_due')) {
-      med.entityIds!.nextDue = entityId;
+      med.entityIds.nextDue = entityId;
       med.nextDue = state.state !== 'unavailable' && state.state !== 'unknown' ? state.state : null;
     } else if (entityId.endsWith('_next_dose_amount')) {
-      med.entityIds!.nextDoseAmount = entityId;
+      med.entityIds.nextDoseAmount = entityId;
       med.nextDoseAmount = state.state !== 'unavailable' && state.state !== 'unknown' ? state.state : null;
     } else if (entityId.endsWith('_inventory')) {
-      med.entityIds!.inventory = entityId;
+      med.entityIds.inventory = entityId;
       med.inventory = parseInventoryFromState(state);
     } else if (entityId.endsWith('_inhaler_puffs')) {
-      med.entityIds!.inhalerPuffs = entityId;
+      med.entityIds.inhalerPuffs = entityId;
       med.inhaler = parseInhalerFromState(state);
     }
   }
